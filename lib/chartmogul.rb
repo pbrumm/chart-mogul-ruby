@@ -1,5 +1,6 @@
 require "chartmogul/version"
+require "chartmogul/client"
 
 module Chartmogul
-  # Your code goes here...
+
 end
