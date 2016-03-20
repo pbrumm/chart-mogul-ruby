@@ -22,5 +22,9 @@ module ChartMogul
     def refute!(predicate, message)
       assert! !predicate, message
     end
+
+    def refute_blank!(value, attribute_name)
+      assert! (!value.nil? && value != ""), "#{attribute_name} cannot be nil or blank"
+    end
   end
 end

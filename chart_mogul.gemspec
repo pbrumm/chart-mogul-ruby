@@ -10,7 +10,7 @@ Gem::Specification.new do |spec|
   spec.email         = ["adam.bird@gmail.com"]
 
   spec.summary       = %q{Gem for working with the ChartMogul API}
-  spec.homepage      = "https://github.com/adambird/chart_mogul-ruby"
+  spec.homepage      = "https://github.com/adambird/chart-mogul-ruby"
   spec.license       = "MIT"
 
   spec.files         = `git ls-files -z`.split("\x0").reject { |f| f.match(%r{^(test|spec|features)/}) }

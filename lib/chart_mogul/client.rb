@@ -6,7 +6,7 @@ module ChartMogul
   class Client
     include ImportApi
 
-    API_ROOT_URL = "https://api.chart_mogul.com"
+    API_ROOT_URL = "https://api.chartmogul.com"
 
     attr_reader :account_token
     attr_reader :secret_key
@@ -36,17 +36,33 @@ module ChartMogul
     end
 
     def preprocess_response(response)
+      puts response.body
       case response.status
       when 200..299
-        JSON.parse(response.body)
+        JSON.parse(response.body, symbolize_names: true)
       when 401
         raise UnauthorizedError.new
+      when 422
+        result = JSON.parse(response.body, symbolize_names: true)
+        raise ValidationError.new(result[:errors])
       else
-        raise StandardError.new("unexpected response")
+        puts response.inspect
+        raise StandardError.new("#{response.status} #{response.body}")
       end
     end
 
     class UnauthorizedError < StandardError
+    end
+
+    class ValidationError < StandardError
+
+      attr_reader :errors
+
+      def initialize(errors)
+        @errors = errors
+        super("validation errors for #{errors.keys.join(', ')}")
+      end
+
     end
   end
 end
