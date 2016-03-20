@@ -1,16 +1,17 @@
 require 'faraday'
 require 'json'
 
-module Chartmogul
+module ChartMogul
   # Public: Primary class for interacting with the ChartMogul API.
   class Client
+    include ImportApi
 
-    API_ROOT_URL = "https://api.chartmogul.com"
+    API_ROOT_URL = "https://api.chart_mogul.com"
 
     attr_reader :account_token
     attr_reader :secret_key
 
-    # Public: Initialize a new Chartmogul::Client.
+    # Public: Initialize a new ChartMogul::Client.
     #
     # options - A Hash of options used to initialize the client (default: {}):
     #           :account_token - The Account Token assigned to your account

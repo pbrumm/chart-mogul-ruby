@@ -1,16 +1,16 @@
 # coding: utf-8
 lib = File.expand_path('../lib', __FILE__)
 $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
-require 'chartmogul/version'
+require 'chart_mogul/version'
 
 Gem::Specification.new do |spec|
-  spec.name          = "chartmogul"
-  spec.version       = Chartmogul::VERSION
+  spec.name          = "chart_mogul"
+  spec.version       = ChartMogul::VERSION
   spec.authors       = ["Adam Bird"]
   spec.email         = ["adam.bird@gmail.com"]
 
   spec.summary       = %q{Gem for working with the ChartMogul API}
-  spec.homepage      = "https://github.com/adambird/chartmogul-ruby"
+  spec.homepage      = "https://github.com/adambird/chart_mogul-ruby"
   spec.license       = "MIT"
 
   spec.files         = `git ls-files -z`.split("\x0").reject { |f| f.match(%r{^(test|spec|features)/}) }

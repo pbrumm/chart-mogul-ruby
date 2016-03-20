@@ -1,8 +1,8 @@
 require 'spec_helper'
 
-describe Chartmogul do
+describe ChartMogul do
   it 'has a version number' do
-    expect(Chartmogul::VERSION).not_to be nil
+    expect(ChartMogul::VERSION).not_to be nil
   end
 
   it 'does something useful' do

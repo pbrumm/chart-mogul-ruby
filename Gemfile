@@ -1,4 +1,4 @@
 source 'https://rubygems.org'
 
-# Specify your gem's dependencies in chartmogul.gemspec
+# Specify your gem's dependencies in chart_mogul.gemspec
 gemspec
