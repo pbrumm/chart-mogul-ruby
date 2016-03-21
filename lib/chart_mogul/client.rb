@@ -15,12 +15,12 @@ module ChartMogul
     #
     # options - A Hash of options used to initialize the client (default: {}):
     #           :account_token - The Account Token assigned to your account
-    #                            (default: ENV["CHARTMOGUL_ACCOUNT_TOKEN"]).
+    #                            (default: ENV["CHART_MOGUL_ACCOUNT_TOKEN"]).
     #           :secret_key    - The Secret key assigned to your account
-    #                            (default: ENV["CHARTMOGUL_SECRET_KEY"]).
+    #                            (default: ENV["CHART_MOGUL_SECRET_KEY"]).
     def initialize(options={})
-      @account_token = options.fetch(:account_token, ENV["CHARTMOGUL_ACCOUNT_TOKEN"])
-      @secret_key    = options.fetch(:secret_key, ENV["CHARTMOGUL_SECRET_KEY"])
+      @account_token = options.fetch(:account_token, ENV["CHART_MOGUL_ACCOUNT_TOKEN"])
+      @secret_key    = options.fetch(:secret_key, ENV["CHART_MOGUL_SECRET_KEY"])
     end
 
     def connection
@@ -47,7 +47,7 @@ module ChartMogul
         raise ValidationError.new(result[:errors])
       else
         puts response.inspect
-        raise StandardError.new("#{response.status} #{response.body}")
+        raise StandardError.new("#{response.status} #{response.body.slice(0,50)}")
       end
     end
 

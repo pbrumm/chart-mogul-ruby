@@ -6,12 +6,23 @@ module ChartMogul
   module ImportApi
     include Assertive
 
+    # Public - list DataSources
+    #
+    # Returns an Array of ChartMogul::Import::DataSource
     def list_data_sources
       response = connection.get("/v1/import/data_sources")
       preprocess_response(response)[:data_sources]
         .map { |ds| Import::DataSource.new(ds) }
     end
 
+    # Public - create a DataSource
+    #
+    # args   - Hash of params only :name is supported
+    #          {
+    #            name: "Name of data source"
+    #          }
+    #
+    # Returns a ChartMogul::Import::DataSource
     def create_data_source(args)
       refute_blank! args[:name], :name
 
@@ -24,15 +35,48 @@ module ChartMogul
       Import::DataSource.new(preprocess_response(response))
     end
 
-    def list_customers
-      response = connection.get("/v1/import/customers")
-      preprocess_response(response)[:customers]
-        .map { |c| Import::Customer.new(c) }
+    # Public - list all Customers.
+    #          this will page through all customers see #list_customers_each
+    #          for iterator method to prevent loading the whole array in
+    #          memory
+    #
+    # options - see #list_customers_each
+    #
+    # Returns an Array of ChartMogul::Import::Customer
+    def list_customers(options={})
+      customers = []
+      list_customers_each { |c| customers << c }
+      customers
+    end
+
+    # Public    - iterate through all customers
+    #
+    # options   - Hash of filter options
+    #             :data_source_uuid
+    #
+    # Returns and Enumerable that will yield a ChartMogul::Import::Customer for
+    # each record
+    def list_customers_each(options={}, &block)
+      params = { page_number: 1 }
+      params[:data_source_uuid] = options[:data_source_uuid] if options[:data_source_uuid]
+
+      begin
+        result = preprocess_response(connection.get("/v1/import/customers", params))
+        result[:customers].each do |customer|
+          yield Import::Customer.new(customer)
+        end
+        params[:page_number] = result[:current_page]
+      end while params[:page_number] < result[:total_pages]
     end
 
     def create_customer(args)
       [:data_source_uuid, :external_id, :name].each do |attribute|
         refute_blank! args[attribute], attribute
+      end
+
+      # ChartMogul API will 500 if nill keys are sent
+      args.keys.each do |key|
+        refute! args[key].nil?
       end
 
       response = connection.post do |request|
