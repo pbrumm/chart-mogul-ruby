@@ -80,13 +80,13 @@ module ChartMogul
       end
     end
 
-    # Public - create a Customer
+    # Public - import a Customer
     #
     # args   - Hash of params see https://dev.chartmogul.com/docs/customers
     #          Mandatory: :data_source_uuid, :external_id, :name
     #
     # Returns a ChartMogul::Import::Customer
-    def create_customer(args)
+    def import_customer(args)
       [:data_source_uuid, :external_id, :name].each do |attribute|
         refute_blank! args[attribute], attribute
       end
@@ -137,13 +137,13 @@ module ChartMogul
       end
     end
 
-    # Public - create a Plan
+    # Public - import a Plan
     #
     # args   - Hash of params see https://dev.chartmogul.com/docs/plans
     #          Mandatory: :data_source_uuid, :name, :interval_count, :interval_unit
     #
     # Returns a ChartMogul::Import::Plan
-    def create_plan(args)
+    def import_plan(args)
       [:data_source_uuid, :name, :interval_unit, :interval_count].each do |attribute|
         refute_blank! args[attribute], attribute
       end

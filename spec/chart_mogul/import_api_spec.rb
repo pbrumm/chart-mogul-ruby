@@ -111,7 +111,7 @@ module ChartMogul
       end
     end
 
-    describe "#create_customer" do
+    describe "#import_customer" do
 
       let(:args) {{
                     data_source_uuid: "ds_fef05d54-47b4-431b-aed2-eb6b9e545430",
@@ -135,7 +135,7 @@ module ChartMogul
                        zip: ""
                       }}
 
-      subject { client.create_customer(args) }
+      subject { client.import_customer(args) }
 
       before(:each) do
         stub_request(:post, request_stub_path(credentials, "/import/customers"))
@@ -219,7 +219,7 @@ module ChartMogul
       end
     end
 
-    describe "#create_plan" do
+    describe "#import_plan" do
 
       let(:args) {{
                    data_source_uuid: "ds_fef05d54-47b4-431b-aed2-eb6b9e545430",
@@ -238,7 +238,7 @@ module ChartMogul
                    external_id: "plan_0001"
                   }}
 
-      subject { client.create_plan(args) }
+      subject { client.import_plan(args) }
 
       before(:each) do
         stub_request(:post, request_stub_path(credentials, "/import/plans"))
