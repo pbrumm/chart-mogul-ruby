@@ -32,11 +32,10 @@ module ChartMogul
 
     def ping?
       response = connection.get("/v1/ping")
-      preprocess_response(response)['data'] == 'pong!'
+      preprocess_response(response)[:data] == 'pong!'
     end
 
     def preprocess_response(response)
-      puts response.body
       case response.status
       when 200..299
         JSON.parse(response.body, symbolize_names: true)
