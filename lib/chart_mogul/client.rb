@@ -37,7 +37,8 @@ module ChartMogul
 
     def paged_get(path, params, data_field)
       begin
-        result = preprocess_response(connection.get(path, params))
+        response = connection.get(path, params)
+        result = preprocess_response(response)
         yield result[data_field]
         params[:page_number] = result[:current_page]
       end while params[:page_number] < result[:total_pages]
@@ -51,11 +52,15 @@ module ChartMogul
         raise UnauthorizedError.new
       when 422
         result = JSON.parse(response.body, symbolize_names: true)
-        raise ValidationError.new(result[:errors])
+        raise ValidationError.new(result)
       else
         puts response.inspect
         raise StandardError.new("#{response.status} #{response.body.slice(0,50)}")
       end
+    end
+
+    def format_datetime(value)
+      value.strftime("%Y-%m-%d %H:%M:%S")
     end
 
     class UnauthorizedError < StandardError
@@ -64,10 +69,16 @@ module ChartMogul
     class ValidationError < StandardError
 
       attr_reader :errors
+      attr_reader :body
 
-      def initialize(errors)
-        @errors = errors
-        super("validation errors for #{errors.keys.join(', ')}")
+      def initialize(result)
+        @body = result.body
+        if result[:errors]
+          @errors = errors
+          super("validation errors for #{errors.keys.join(', ')}")
+        else
+          super("validation errors #{@body}")
+        end
       end
 
     end

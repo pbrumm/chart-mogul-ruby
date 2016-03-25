@@ -96,17 +96,37 @@ module ChartMogul
                            zip: ""
                          }
                           ]}
-      before(:each) do
-        stub_request(:get, request_stub_path(credentials, "/import/customers") + "?page_number=1")
-          .to_return(status: 200, body: { customers: customers, current_page: 1, total_pages: 1 }.to_json)
-      end
-
       subject { client.list_customers }
 
-      it "should return all of the data sources" do
-        result = subject
-        customers.each_with_index do |customer, i|
-          expect(result[i].uuid).to eq(customer[:uuid])
+      context "when don't filter by data_source_uuid" do
+        before(:each) do
+          stub_request(:get, request_stub_path(credentials, "/import/customers") + "?page_number=1")
+            .to_return(status: 200, body: { customers: customers, current_page: 1, total_pages: 1 }.to_json)
+        end
+
+        it "should return all of the data sources" do
+          result = subject
+          customers.each_with_index do |customer, i|
+            expect(result[i].uuid).to eq(customer[:uuid])
+          end
+        end
+      end
+
+      context "when filter by data_source_uuid" do
+        let(:data_source_uuid) { "ds_fef05d54-47b4-431b-aed2-eb6b9e545430"}
+
+        before(:each) do
+          stub_request(:get, request_stub_path(credentials, "/import/customers") + "?page_number=1&data_source_uuid=#{data_source_uuid}")
+            .to_return(status: 200, body: { customers: customers, current_page: 1, total_pages: 1 }.to_json)
+        end
+
+        subject { client.list_customers(data_source_uuid: data_source_uuid) }
+
+        it "should return results" do
+          result = subject
+          customers.each_with_index do |customer, i|
+            expect(result[i].uuid).to eq(customer[:uuid])
+          end
         end
       end
     end
@@ -296,5 +316,112 @@ module ChartMogul
       end
     end
 
+    describe "#import_invoices" do
+      let(:args) { [
+                       {
+                          external_id: "INV0001",
+                          date: Time.parse("2015-11-01 00:00:00"),
+                          currency: "USD",
+                          due_date: "2015-11-15 00:00:00",
+                          line_items: [
+                            {
+                              type: "subscription",
+                              subscription_external_id: "sub_0001",
+                              plan_uuid:"pl_eed05d54-75b4-431b-adb2-eb6b9e543206",
+                              service_period_start: Time.parse("2015-11-01 00:00:00"),
+                              service_period_end: Time.parse("2015-12-01 00:00:00"),
+                              amount_in_cents: 5000,
+                              quantity: 1,
+                              discount_code: "PSO86",
+                              discount_amount_in_cents: 1000,
+                              tax_amount_in_cents: 900
+                            },
+                            {
+                              type: "one_time",
+                              description: "Setup Fees",
+                              amount_in_cents: 2500,
+                              quantity: 1,
+                              discount_code: "PSO86",
+                              discount_amount_in_cents: 500,
+                              tax_amount_in_cents: 450
+                            }
+                          ],
+                          transactions: [
+                            {
+                              date: Time.parse("2015-11-05 00:14:23"),
+                              type: "payment",
+                              result: "successful"
+                            }
+                          ]
+                       }
+                     ]
+                    }
+      let(:invoices) {
+                      [
+                        {
+                          uuid: "inv_565c73b2-85b9-49c9-a25e-2b7df6a677c9",
+                          external_id: "INV0001",
+                          date: "2015-11-01T00:00:00.000Z",
+                          due_date: "2015-11-15T00:00:00.000Z",
+                          currency: "USD",
+                          line_items: [
+                            {
+                              uuid: "li_d72e6843-5793-41d0-bfdf-0269514c9c56",
+                              external_id: nil,
+                              type: "subscription",
+                              subscription_uuid: "sub_e6bc5407-e258-4de0-bb43-61faaf062035",
+                              plan_uuid: "pl_eed05d54-75b4-431b-adb2-eb6b9e543206",
+                              prorated: false,
+                              service_period_start: "2015-11-01T00:00:00.000Z",
+                              service_period_end: "2015-12-01T00:00:00.000Z",
+                              amount_in_cents: 5000,
+                              quantity: 1,
+                              discount_code: "PSO86",
+                              discount_amount_in_cents: 1000,
+                              tax_amount_in_cents: 900
+                            },
+                            {
+                              uuid: "li_0cc8c112-beac-416d-af11-f35744ca4e83",
+                              external_id: nil,
+                              type: "one_time",
+                              description: "Setup Fees",
+                              amount_in_cents: 2500,
+                              quantity: 1,
+                              discount_code: "PSO86",
+                              discount_amount_in_cents: 500,
+                              tax_amount_in_cents: 450
+                            }
+                          ],
+                          transactions: [
+                            {
+                              uuid: "tr_879d560a-1bec-41bb-986e-665e38a2f7bc",
+                              external_id: nil,
+                              type: "payment",
+                              date: "2015-11-05T00:14:23.000Z",
+                              result: "successful"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+
+      let(:customer_id) { "cus_f466e33d-ff2b-4a11-8f85-417eb02157a7" }
+
+      subject { client.import_invoices(customer_id, args) }
+
+      before(:each) do
+        stub_request(:post, request_stub_path(credentials, "/import/customers/#{customer_id}/invoices"))
+            .to_return(body: { invoices: invoices }.to_json)
+      end
+
+      it "should return the created invoices" do
+        result = subject
+        invoices.each_with_index do |invoice, i|
+          expect(result[i].uuid).to eq(invoice[:uuid])
+          expect(result[i].line_items.count).to eq(invoice[:line_items].count)
+        end
+      end
+
+    end
   end
 end

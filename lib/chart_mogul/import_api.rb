@@ -1,6 +1,7 @@
 require_relative 'import/customer'
 require_relative 'import/data_source'
 require_relative 'import/plan'
+require_relative 'import/invoice'
 
 module ChartMogul
   module ImportApi
@@ -158,5 +159,44 @@ module ChartMogul
 
       Import::Plan.new(preprocess_response(response))
     end
+
+    # Public      - import Invoices
+    #
+    # customer_id - ChartMogul id for the customer
+    # invoices    - Array of Hash of params see https://dev.chartmogul.com/docs/invoices
+    #               Mandatory: :external_id, :date, :currency, :line_items
+    #
+    # Returns an Array of ChartMogul::Import::Invoice
+    def import_invoices(customer_id, invoices)
+      refute_blank! customer_id, "customer_id"
+      refute! invoices.nil? && invoices.empty?, "invoices required"
+
+      args = { invoices: invoices }
+
+      args[:invoices].each do |invoice|
+        [:external_id, :date, :currency].each do |attribute|
+          refute_blank! invoice[attribute], attribute
+        end
+
+        invoice[:date] = format_datetime(invoice[:date])
+
+        assert! invoice[:line_items] && invoice[:line_items].any?, "line_items is required"
+
+        invoice[:line_items].each do |line_item|
+          line_item[:service_period_start] = format_datetime(line_item[:service_period_start]) if line_item[:service_period_start]
+          line_item[:service_period_end] = format_datetime(line_item[:service_period_end]) if line_item[:service_period_end]
+        end
+
+      end
+
+      response = connection.post do |request|
+        request.url "/v1/import/customers/#{customer_id}/invoices"
+        request.headers['Content-Type'] = "application/json"
+        request.body = args.to_json
+      end
+
+      preprocess_response(response)[:invoices].map { |i| Import::Invoice.new(i) }
+    end
+
   end
 end
