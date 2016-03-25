@@ -35,6 +35,14 @@ module ChartMogul
       preprocess_response(response)[:data] == 'pong!'
     end
 
+    def paged_get(path, params, data_field)
+      begin
+        result = preprocess_response(connection.get(path, params))
+        yield result[data_field]
+        params[:page_number] = result[:current_page]
+      end while params[:page_number] < result[:total_pages]
+    end
+
     def preprocess_response(response)
       case response.status
       when 200..299
