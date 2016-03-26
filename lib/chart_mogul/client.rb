@@ -72,7 +72,7 @@ module ChartMogul
       attr_reader :body
 
       def initialize(result)
-        @body = result.body
+        @body = result
         if result[:errors]
           @errors = errors
           super("validation errors for #{errors.keys.join(', ')}")
