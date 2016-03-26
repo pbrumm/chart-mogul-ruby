@@ -160,6 +160,27 @@ module ChartMogul
       Import::Plan.new(preprocess_response(response))
     end
 
+    # Public      - import a single Invoice. Convenience method that
+    #               maps the output (and validation errors) to a single operation
+    #
+    # customer_id - ChartMogul id for the customer
+    # invoice     - Hash of params see https://dev.chartmogul.com/docs/invoices
+    #               See invoice_invoices for mandatory attributes
+    #
+    # Returns an Array of ChartMogul::Import::Invoice
+    def import_invoice(customer_id, invoice)
+      invoices = import_invoices(customer_id, [ invoice ])
+      invoices.first
+
+    rescue ChartMogul::Client::ValidationError => e
+      # restructure ValidationError to map the single invoice error that was returned
+      if e.body[:invoices]
+        raise ChartMogul::Client::ValidationError.new(e.body[:invoices].first)
+      else
+        raise
+      end
+    end
+
     # Public      - import Invoices
     #
     # customer_id - ChartMogul id for the customer

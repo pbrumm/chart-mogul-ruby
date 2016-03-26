@@ -74,8 +74,8 @@ module ChartMogul
       def initialize(result)
         @body = result
         if result[:errors]
-          @errors = errors
-          super("validation errors for #{errors.keys.join(', ')}")
+          @errors = result[:errors]
+          super("validation errors for #{@errors.keys.join(', ')}")
         else
           super("validation errors #{@body}")
         end
