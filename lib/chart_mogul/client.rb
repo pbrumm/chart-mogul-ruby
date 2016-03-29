@@ -30,6 +30,10 @@ module ChartMogul
                       end
     end
 
+    def credentials?
+      account_token && secret_key
+    end
+
     def ping?
       response = connection.get("/v1/ping")
       preprocess_response(response)[:data] == 'pong!'
