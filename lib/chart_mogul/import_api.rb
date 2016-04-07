@@ -206,6 +206,7 @@ module ChartMogul
         invoice[:line_items].each do |line_item|
           line_item[:service_period_start] = format_datetime(line_item[:service_period_start]) if line_item[:service_period_start]
           line_item[:service_period_end] = format_datetime(line_item[:service_period_end]) if line_item[:service_period_end]
+          assert! line_item[:quantity].nil? || line_item[:quantity] > 0, "line_item quantity must be greater than zero if specified"
         end
 
       end
@@ -217,6 +218,34 @@ module ChartMogul
       end
 
       preprocess_response(response)[:invoices].map { |i| Import::Invoice.new(i) }
+    end
+
+    # Public       - list of Customer invoices
+    # customer_id  - ChartMogul id for the customer
+    #
+    # Returns an Array of ChartMogul::Import::Invoice
+    def list_invoices(customer_id)
+      invoices = []
+      list_invoices_each(customer_id) { |i| invoices << i }
+      invoices
+    end
+
+    # Public    - iterate through all invoices
+    #
+    # customer_id  - ChartMogul id for the customer
+    #
+    # Returns an Enumerable that will yield a ChartMogul::Import::Invoice for
+    # each record
+    def list_invoices_each(customer_id, &block)
+      refute_blank! customer_id, "customer_id"
+
+      params = { page_number: 1 }
+
+      paged_get("/v1/import/customers/#{customer_id}/invoices", params, :invoices) do |invoices|
+        invoices.each do |invoice|
+          yield Import::Invoice.new(invoice)
+        end
+      end
     end
 
   end
