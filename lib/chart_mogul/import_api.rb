@@ -71,7 +71,7 @@ module ChartMogul
     # Returns an Enumerable that will yield a ChartMogul::Import::Customer for
     # each record
     def list_customers_each(options={}, &block)
-      params = { page_number: 1 }
+      params = {}
       params[:data_source_uuid] = options[:data_source_uuid] if options[:data_source_uuid]
 
       paged_get("/v1/import/customers", params, :customers) do |customers|
@@ -128,7 +128,7 @@ module ChartMogul
     # Returns an Enumerable that will yield a ChartMogul::Import::Plan for
     # each record
     def list_plans_each(options={}, &block)
-      params = { page_number: 1 }
+      params = {}
       params[:data_source_uuid] = options[:data_source_uuid] if options[:data_source_uuid]
 
       paged_get("/v1/import/plans", params, :plans) do |plans|
@@ -239,9 +239,7 @@ module ChartMogul
     def list_invoices_each(customer_id, &block)
       refute_blank! customer_id, "customer_id"
 
-      params = { page_number: 1 }
-
-      paged_get("/v1/import/customers/#{customer_id}/invoices", params, :invoices) do |invoices|
+      paged_get("/v1/import/customers/#{customer_id}/invoices", {}, :invoices) do |invoices|
         invoices.each do |invoice|
           yield Import::Invoice.new(invoice)
         end

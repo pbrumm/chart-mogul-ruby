@@ -41,6 +41,7 @@ module ChartMogul
 
     def paged_get(path, params, data_field)
       begin
+        params[:page_number] = 1 unless params[:page_number]
         response = connection.get(path, params)
         result = preprocess_response(response)
         yield result[data_field]
