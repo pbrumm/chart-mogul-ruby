@@ -2,6 +2,7 @@ module ChartMogul
   module Import
     class Customer
 
+      attr_reader :id
       attr_reader :uuid
       attr_reader :data_source_uuid
       attr_reader :external_id
@@ -16,7 +17,9 @@ module ChartMogul
 
       def initialize(args)
         args.each_pair do |key, value|
-          instance_variable_set("@#{key}", value)
+          if self.respond_to?(key)
+            instance_variable_set("@#{key}", value)
+          end
         end
       end
 

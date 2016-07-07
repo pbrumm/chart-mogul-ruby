@@ -41,12 +41,13 @@ module ChartMogul
 
     def paged_get(path, params, data_field)
       begin
-        params[:page_number] = 1 unless params[:page_number]
+        params[:page] = 1 unless params[:page]
         response = connection.get(path, params)
         result = preprocess_response(response)
         yield result[data_field]
-        params[:page_number] = result[:current_page]
-      end while params[:page_number] < result[:total_pages]
+        p result[:current_page]
+        params[:page] = params[:page] + 1
+      end while result[:has_more] == true || (result.has_key?(:total_pages) && params[:page] < result[:total_pages] )
     end
 
     def preprocess_response(response)

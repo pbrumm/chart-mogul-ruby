@@ -1,4 +1,5 @@
 require_relative 'import/customer'
+require_relative 'import/subscription'
 require_relative 'import/data_source'
 require_relative 'import/plan'
 require_relative 'import/invoice'
@@ -6,7 +7,25 @@ require_relative 'import/invoice'
 module ChartMogul
   module ImportApi
     include Assertive
+  def list_subscriptions(customer_id)
+      response = connection.get("/v1/import/customers/#{customer_id}/subscriptions")
+      preprocess_response(response)[:subscriptions]
+        .map { |ds| Import::Subscription.new(ds) }
+    end
+  def list_customers_enrich
+      response = connection.get("/v1/customers")
+      preprocess_response(response)[:entries]
+        .map { |ds| Import::Customer.new(ds) }
+    end
+def list_customers_enrich_each(options={}, &block)
+      params = {}
 
+      paged_get("/v1/customers", params, :entries) do |customers|
+        customers.each do |customer|
+          yield Import::Customer.new(customer)
+        end
+      end
+    end
     # Public - list DataSources
     #
     # Returns an Array of ChartMogul::Import::DataSource
@@ -31,6 +50,17 @@ module ChartMogul
         request.url "/v1/import/data_sources"
         request.headers['Content-Type'] = "application/json"
         request.body = args.to_json
+      end
+
+      Import::DataSource.new(preprocess_response(response))
+    end
+
+    def set_customer_tags(customer_id, tags)
+
+      response = connection.post do |request|
+        request.url "/v1/customers/#{customer_id}/attributes/tags"
+        request.headers['Content-Type'] = "application/json"
+        request.body = {tags: tags}.to_json
       end
 
       Import::DataSource.new(preprocess_response(response))
